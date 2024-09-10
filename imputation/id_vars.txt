@@ -1,0 +1,14 @@
+entry_id
+year_from
+year_to
+log_area
+region_africa
+region_central_eurasia
+region_east_asia
+region_europe
+region_north_america
+region_oceania_australia
+region_south_america
+region_south_asia
+region_southeast_asia
+region_southwest_asia
