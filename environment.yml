@@ -10,3 +10,8 @@ dependencies:
   - scikit-learn
   - ipykernel
   - seaborn
+  - pytorch
+  - shap
+  - pip
+  - pip: 
+    - wget

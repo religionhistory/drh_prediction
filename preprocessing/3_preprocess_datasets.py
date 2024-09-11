@@ -14,10 +14,24 @@ questions = pd.read_csv("../data/preprocessed/answers.csv")
 
 
 # function to get the n most answered questions
-def get_count_answers(questions: pd.DataFrame, n: int) -> pd.DataFrame:
+def get_count_answers(
+    questions: pd.DataFrame, n: int, min_mixing: float = 0.05
+) -> pd.DataFrame:
     """
-    Get the n most answered questions.
+    For min_mixing = 0 get n most answered questions.
+    For min_mixing > 0 get n most answered with mixing (yes-no) above min_mixing.
     """
+    answer_mean = (
+        questions.groupby("question_id")["answer_value"]
+        .mean()
+        .reset_index(name="answer_mean")
+    )
+    answer_mean = answer_mean[
+        (answer_mean["answer_mean"] > min_mixing)
+        & (answer_mean["answer_mean"] < 1 - min_mixing)
+    ]
+    answer_mean = answer_mean["question_id"].unique().tolist()
+    questions = questions[questions["question_id"].isin(answer_mean)]
     count_answers = questions.groupby("question_id").size().reset_index(name="count")
     count_answers = count_answers.sort_values(by="count", ascending=False)
     count_answers = count_answers.head(n)

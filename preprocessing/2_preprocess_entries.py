@@ -53,10 +53,6 @@ entry_wr = entry_wr.rename(
     }
 )
 
-# merge back region id
-region_data = region_data[["entry_id", "region_id"]].drop_duplicates()
-region_data = entry_wr.merge(region_data, on="entry_id", how="inner")
-
 ### entry tags ###
 
 # load entity tags
@@ -110,14 +106,15 @@ entity_pivot.columns = ["entry_id"] + [
 ### merge entity tags, region data and date data ###
 
 # merge left because we have missing cases in region data
-entry_metadata = region_data.merge(entity_pivot, on="entry_id", how="left").fillna(0)
-
-# fix floats to integers
-for col in test.columns:
-    if col != "entry_id":
-        test[col] = test[col].astype(int)
+entry_metadata = entry_wr.merge(entity_pivot, on="entry_id", how="left").fillna(0)
 
 # merge with date data
 entry_metadata = entry_daterange.merge(entry_metadata, on="entry_id", how="inner")
 entry_metadata = entry_metadata.sort_values(by="entry_id")
+
+# fix floats to integers
+for col in entry_metadata.columns:
+    if col != "entry_id":
+        entry_metadata[col] = entry_metadata[col].astype(int)
+
 entry_metadata.to_csv("../data/preprocessed/entry_metadata.csv", index=False)

@@ -11,7 +11,6 @@ region_south_america
 region_south_asia
 region_southeast_asia
 region_southwest_asia
-region_id
 entrytag_9
 entrytag_14
 entrytag_18
