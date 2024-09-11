@@ -1,7 +1,6 @@
 entry_id
 year_from
 year_to
-log_area
 region_africa
 region_central_eurasia
 region_east_asia
@@ -12,3 +11,14 @@ region_south_america
 region_south_asia
 region_southeast_asia
 region_southwest_asia
+region_id
+entrytag_9
+entrytag_14
+entrytag_18
+entrytag_24
+entrytag_38
+entrytag_123
+entrytag_508
+entrytag_510
+entrytag_905
+entrytag_14828

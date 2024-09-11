@@ -1,10 +1,8 @@
 #!/bin/bash
 
 # run each preprocessing step
-Rscript extract_world_regions_1.R
-python3 preprocess_answers_2.py
-python3 preprocess_entries_3.py
-python3 regions_coded_4.py
-python3 preprocess_final_5.py
+python3 1_preprocess_answers.py
+python3 2_preprocess_entries.py
+python3 3_preprocess_datasets.py
 
 echo "preprocessing done"
