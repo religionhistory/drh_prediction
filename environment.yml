@@ -12,6 +12,7 @@ dependencies:
   - seaborn
   - pytorch
   - shap
+  - xgboost
   - pip
   - pip: 
     - wget

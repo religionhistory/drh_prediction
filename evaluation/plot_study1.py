@@ -3,11 +3,11 @@ from evaluation_functions import multiple_lineplots, single_lineplot
 
 # setup
 outpath = "../figures/study1"
-df_metrics = pd.read_csv("evaluation/metrics_study5.csv")
+df_metrics = pd.read_csv("../data/evaluation/metrics_study1.csv")
 df_long = pd.melt(
     df_metrics,
     id_vars=["Question", "Method", "Type", "Percent", "Iter"],
-    value_vars=["Accuracy", "Mean Percent Bias", "Matthews Correlation"],
+    value_vars=["Accuracy", "F1 score", "Matthews Correlation"],
     var_name="metric",
     value_name="values",
 )
@@ -16,22 +16,13 @@ df_long = df_long.sort_values("Method")
 # overall metrics plot #
 color_dict = {
     "mode": "tab:gray",
-    "mice": "tab:blue",
-    "miceSample": "tab:purple",
-    "micePMM": "tab:green",
-    "miceCART": "tab:brown",
-    "miceRF": "tab:red",
-    "missForest": "tab:orange",
+    "knn": "tab:blue",
+    "ridge": "tab:orange",
+    "rf": "tab:red",
+    "xgb": "tab:green",
 }
-legend_order = [
-    "mode",
-    "mice",
-    "miceSample",
-    "micePMM",
-    "miceCART",
-    "miceRF",
-    "missForest",
-]
+
+legend_order = ["mode", "knn", "ridge", "rf", "xgb"]
 multiple_lineplots(
     df=df_long,
     metric="values",
@@ -39,110 +30,36 @@ multiple_lineplots(
     grid="metric",
     color_dict=color_dict,
     legend_order=legend_order,
-    ncol_legend=4,
-    outpath=outpath,
-    outname="overall_metrics.png",
+    ncol_legend=3,
+    # outpath=outpath,
+    # outname="overall_metrics.png",
 )
 
 """ 
-MICE (standard) surprisingly bad (MPB, Accuracy). 
-missForest best across all metrics. 
-"""
-
-# correlations between variables plot #
-palette = {
-    "additional_NA": "black",
-    "mode": "tab:gray",
-    "mice": "tab:blue",
-    "miceSample": "tab:purple",
-    "micePMM": "tab:green",
-    "miceCART": "tab:brown",
-    "miceRF": "tab:red",
-    "missForest": "tab:orange",
-}
-hue_order = [
-    "additional_NA",
-    "mode",
-    "mice",
-    "miceSample",
-    "micePMM",
-    "miceCART",
-    "miceRF",
-    "missForest",
-]
-pairwise_corr = pd.read_csv("evaluation/correlations_study1.csv")
-pairwise_corr["corr_delta"] = (
-    pairwise_corr["corr_complete"] - pairwise_corr["corr_imputed"]
-)
-pairwise_corr["corr_delta_abs"] = abs(pairwise_corr["corr_delta"])
-pairwise_corr["corr_delta_sq"] = pairwise_corr["corr_delta"] ** 2
-pairwise_corr["pairs"] = pairwise_corr["var_x"] + " " + pairwise_corr["var_y"]
-pairwise_corr = pairwise_corr.rename(columns={"corr_delta_sq": "Squared Difference"})
-pairwise_corr = pairwise_corr.sort_values("Method")
-
-single_lineplot(
-    df=pairwise_corr,
-    metric="Squared Difference",
-    hue="Method",
-    ncol_legend=4,
-    palette=palette,
-    hue_order=hue_order,
-    outpath=outpath,
-    outname="correlation_difference.png",
-)
-
-""" 
-miceRF (best), miceCART (second), missForest (third) 
-MICE (standard) doing worse than mode is surprising.
-"""
-
-# correlation by missingness mechanism
-multiple_lineplots(
-    df=pairwise_corr,
-    grid="Type",
-    metric="Squared Difference",
-    hue="Method",
-    ncol_legend=4,
-    color_dict=palette,
-    legend_order=hue_order,
-    sharey="all",
-    outpath=outpath,
-    outname="correlation_difference_missingness.png",
-)
-
-"""
-Surprisingly similar.
+Random Forest does best currently. 
+Need to tweak hyper params for XGBoost & KNN. 
+Also need to figure out which implementation of XGB. 
 """
 
 # other metrics by missingness mechanism (e.g., MPB)
-df_MPB = df_long[df_long["metric"] == "Mean Percent Bias"]
-df_MPB = df_MPB[df_MPB["Method"].isin(["micePMM", "miceCART", "miceRF", "missForest"])]
-color_dict = {
-    "micePMM": "tab:green",
-    "miceCART": "tab:brown",
-    "miceRF": "tab:red",
-    "missForest": "tab:orange",
-}
-hue_order = [
-    "micePMM",
-    "miceCART",
-    "miceRF",
-    "missForest",
-]
+# the whole missingness mechanism I think is not so much
+# a problem for prediction per se, but for imputation
+# (i.e., other considerations than accuracy).
+df_f1 = df_long[df_long["metric"] == "F1 score"]
 multiple_lineplots(
-    df=df_MPB,
+    df=df_f1,
     grid="Type",
     metric="values",
     hue="Method",
     ncol_legend=4,
     color_dict=color_dict,
-    legend_order=hue_order,
-    outpath=outpath,
-    outname="MPB_missingness.png",
+    # legend_order=hue_order,
+    # outpath=outpath,
+    # outname="MPB_missingness.png",
 )
 
 ### prediction by question (for missForest) ###
-df_long_missforest = df_long[df_long["Method"] == "missForest"]
+df_long_missforest = df_long[df_long["Method"] == "rf"]
 df_long_missforest["Question"].sort_values().unique()
 
 # map questions

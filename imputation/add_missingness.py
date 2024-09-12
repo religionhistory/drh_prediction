@@ -116,6 +116,20 @@ def update_sub_questions(data, question_levels, condition, update_value):
     return data_copy
 
 
+def gather_missingness(question_levels, complete_answers, imputations):
+    X_missing = imputations["X_incomp"]
+    X_missing = pd.DataFrame(
+        X_missing.numpy(), columns=complete_answers.filter(regex="^Q_").columns
+    )
+    # update sub-questions
+    X_missing = update_sub_questions(
+        X_missing, question_levels, lambda x: x.isna(), np.nan
+    )
+    # bind with id vars & save
+    X_missing = pd.concat([id_var, X_missing], axis=1)
+    return X_missing
+
+
 # load answers
 answers_study1 = pd.read_csv("../data/preprocessed/answers_study1.csv")
 
@@ -130,28 +144,61 @@ question_var = question_var.to_numpy()
 # also need question levels
 question_level_study1 = pd.read_csv("../data/preprocessed/question_level_study1.csv")
 
+
 # grid of missingness
-p_miss = [0.1, 0.2, 0.3, 0.4, 0.5]
-
-for p in p_miss:
-    p_ = p * 1.25  # 1 / (1 - 0.2)
-    # generate missing data
-    mcar_data = produce_NA(question_var, p, mecha="MCAR")
-    mar_data = produce_NA(question_var, p_, mecha="MAR", p_obs=0.2)
-    mnar_data = produce_NA(question_var, p, mecha="MNAR", opt="logistic", p_obs=0.5)
-
-    for data, mecha in zip([mcar_data, mar_data, mnar_data], ["MCAR", "MAR", "MNAR"]):
-        X_missing = data["X_incomp"]
-        X_missing = pd.DataFrame(
-            X_missing.numpy(), columns=answers_study1.filter(regex="^Q_").columns
+def MCAR_missingness(
+    complete_answers,
+    question_var,
+    question_levels,
+    iter,
+    p_miss=[0.1, 0.2, 0.3, 0.4, 0.5],
+):
+    for p in p_miss:
+        percent = int(p * 100)  # for saving
+        # generate missing data
+        mcar_data = produce_NA(question_var, p, mecha="MCAR")
+        X_missing = gather_missingness(question_levels, complete_answers, mcar_data)
+        X_missing.to_csv(
+            f"../data/study1/additional_NA/NA_MCAR_{percent}_{iter}.csv", index=False
         )
-        # check missingness
-        print(f"p_miss: {p}")
-        print(f"miss: {np.round(X_missing.isna().mean().mean(), 2)}")
-        # update sub-questions
-        X_missing = update_sub_questions(
-            X_missing, question_level_study1, lambda x: x.isna(), np.nan
+
+
+def MAR_missingness(
+    complete_answers,
+    question_var,
+    question_levels,
+    iter,
+    p_miss=[0.1, 0.2, 0.3, 0.4, 0.5],
+):
+    for p in p_miss:
+        p_ = p * 1.25  # 1 / (1 - 0.2)
+        percent = int(p * 100)  # for saving
+        # generate missing data
+        mar_data = produce_NA(question_var, p_, mecha="MAR", p_obs=0.2)
+        X_missing = gather_missingness(question_levels, complete_answers, mar_data)
+        X_missing.to_csv(
+            f"../data/study1/additional_NA/NA_MAR_{percent}_{iter}.csv", index=False
         )
-        # bind with id vars & save
-        X_missing = pd.concat([id_var, X_missing], axis=1)
-        X_missing.to_csv(f"../data/study1/additional_NA/{mecha}_{p}.csv", index=False)
+
+
+def MNAR_missingness(
+    complete_answers,
+    question_var,
+    question_levels,
+    iter,
+    p_miss=[0.1, 0.2, 0.3, 0.4, 0.5],
+):
+    for p in p_miss:
+        percent = int(p * 100)  # for saving
+        # generate missing data
+        mnar_data = produce_NA(question_var, p, mecha="MNAR", opt="logistic", p_obs=0.5)
+        X_missing = gather_missingness(question_levels, complete_answers, mnar_data)
+        X_missing.to_csv(
+            f"../data/study1/additional_NA/NA_MNAR_{percent}_{iter}.csv", index=False
+        )
+
+
+for iter in range(10):
+    MCAR_missingness(answers_study1, question_var, question_level_study1, iter)
+    MAR_missingness(answers_study1, question_var, question_level_study1, iter)
+    MNAR_missingness(answers_study1, question_var, question_level_study1, iter)
