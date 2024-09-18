@@ -15,7 +15,7 @@ questions = pd.read_csv("../data/preprocessed/answers.csv")
 
 # function to get the n most answered questions
 def get_count_answers(
-    questions: pd.DataFrame, n: int, min_mixing: float = 0.05
+    questions: pd.DataFrame, n: int, min_mixing: float = 0.1
 ) -> pd.DataFrame:
     """
     For min_mixing = 0 get n most answered questions.
@@ -39,8 +39,8 @@ def get_count_answers(
 
 
 # get the 15 and 100 most answered questions
-small_dataset = get_count_answers(questions, 15)
-large_dataset = get_count_answers(questions, 100)
+small_dataset = get_count_answers(questions, 15, min_mixing=0.1)
+large_dataset = get_count_answers(questions, 100, min_mixing=0.0)
 
 questions = questions[["entry_id", "question_id", "answer_value"]].drop_duplicates()
 questions_small = questions[questions["question_id"].isin(small_dataset["question_id"])]
@@ -124,11 +124,3 @@ pivot_large = prefix_question_columns(pivot_large)
 # save data
 pivot_small.to_csv("../data/preprocessed/answers_study1.csv", index=False)
 pivot_large.to_csv("../data/preprocessed/answers_study2.csv", index=False)
-
-# save id vars (same for pivot_small and pivot_large)
-# used in add_NA_0.R
-id_columns = [col for col in pivot_small.columns if not col.startswith("Q_")]
-file_path = "../imputation/id_vars.txt"
-with open(file_path, "w") as file:
-    for col in id_columns:
-        file.write(col + "\n")
