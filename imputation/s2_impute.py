@@ -13,9 +13,12 @@ from xgboost import XGBRegressor
 from imputation_functions import (
     impute_data,
     evaluate_imputation,
+    hierarchical_imputation,
+    data_integrity_check,
+    hierarchical_relationship_check,
 )
 
-study = "study1"
+study = "study2"
 
 # Load the original data
 data_original = pd.read_csv(f"../data/preprocessed/answers_{study}.csv")
@@ -98,6 +101,8 @@ def run_imputation(
     imputer_name,
     imputer,
     data_original,
+    df_relationships,
+    non_question_predictors,
     imputation_columns,
 ):
     # Output folder for imputed datasets
@@ -124,11 +129,16 @@ def run_imputation(
         data_missing = pd.read_csv(data_file)
 
         # Perform hierarchical imputation
-        data_imputed = impute_data(
-            imputer=imputer,
+        data_imputed = hierarchical_imputation(
+            df_relationships=df_relationships,
+            non_question_predictors=non_question_predictors,
             data_missing=data_missing,
-            imputation_columns=imputation_columns,
+            imputer=imputer,
         )
+
+        # Verify the imputed data
+        data_integrity_check(data_missing, data_imputed)
+        hierarchical_relationship_check(data_imputed, df_relationships)
 
         # Evaluate the imputed data
         avg_metrics, metrics_dict = evaluate_imputation(
@@ -156,6 +166,10 @@ def run_imputation(
         # Save the imputed dataset
         imputed_data_filename = os.path.join(output_folder, dataset_name)
         data_imputed.to_csv(imputed_data_filename, index=False)
+
+        print(
+            f"Imputation and evaluation for {imputer_name} on {dataset_name} completed."
+        )
 
     # Convert the evaluation results to a DataFrame
     evaluation_results = pd.DataFrame(evaluation_rows)

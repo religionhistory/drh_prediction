@@ -87,12 +87,14 @@ def gather_missingness(complete_answers, imputations):
     return X_missing
 
 
+study = "study1"
+
 # load answers
-answers_study1 = pd.read_csv("../data/preprocessed/answers_study1.csv")
+answers = pd.read_csv(f"../data/preprocessed/answers_{study}.csv")
 
 # split into questions and non-questions
-question_var = answers_study1.filter(regex="^Q_")
-id_var = answers_study1[answers_study1.columns.difference(question_var.columns)]
+question_var = answers.filter(regex="^Q_")
+id_var = answers[answers.columns.difference(question_var.columns)]
 
 # now make integer and ready for imputation
 question_var = question_var.astype(int)
@@ -114,7 +116,7 @@ def MCAR_missingness(
         mcar_data = produce_NA(question_var, p, mecha="MCAR")
         X_missing = gather_missingness(question_levels, complete_answers, mcar_data)
         X_missing.to_csv(
-            f"../data/study1/{folder}/NA_MCAR_{percent}_{iter}.csv", index=False
+            f"../data/{study}/{folder}/NA_MCAR_{percent}_{iter}.csv", index=False
         )
 
 
@@ -133,7 +135,7 @@ def MAR_missingness(
         mar_data = produce_NA(question_var, p_, mecha="MAR", p_obs=0.2)
         X_missing = gather_missingness(question_levels, complete_answers, mar_data)
         X_missing.to_csv(
-            f"../data/study1/{folder}/NA_MAR_{percent}_{iter}.csv", index=False
+            f"../data/{study}/{folder}/NA_MAR_{percent}_{iter}.csv", index=False
         )
 
 
@@ -142,6 +144,7 @@ def MNAR_missingness(
     question_var,
     question_levels,
     iter,
+    study,
     p_miss=[0.1, 0.2, 0.3, 0.4, 0.5],
     folder="additional_NA",
 ):
@@ -151,21 +154,22 @@ def MNAR_missingness(
         mnar_data = produce_NA(question_var, p, mecha="MNAR", opt="logistic", p_obs=0.5)
         X_missing = gather_missingness(question_levels, complete_answers, mnar_data)
         X_missing.to_csv(
-            f"../data/study1/{folder}/NA_MNAR_{percent}_{iter}.csv", index=False
+            f"../data/{study}/{folder}/NA_MNAR_{percent}_{iter}.csv", index=False
         )
 
 
 # the data sets for imputation / prediction
 for iter in range(10):
-    MCAR_missingness(answers_study1, question_var, iter)
-    MAR_missingness(answers_study1, question_var, iter)
-    MNAR_missingness(answers_study1, question_var, iter)
+    MCAR_missingness(answers, question_var, iter, study)
+    MAR_missingness(answers, question_var, iter, study)
+    MNAR_missingness(answers, question_var, iter, study)
 
 # the data sets for tuning hyperparameters
 MCAR_missingness(
-    answers_study1,
+    answers,
     question_var,
     1,
+    study,
     p_miss=[0.25],
     folder="hyperparams",
 )

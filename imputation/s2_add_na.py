@@ -179,8 +179,10 @@ def check_relationships(df_data, df_relationships):
     return violations_df
 
 
+study = "study2"
+
 # load answers
-answers = pd.read_csv("../data/preprocessed/answers_study2.csv")
+answers = pd.read_csv(f"../data/preprocessed/answers_{study}.csv")
 
 # split into questions and non-questions
 question_var = answers.filter(regex="^Q_")
@@ -190,7 +192,7 @@ id_var = answers[answers.columns.difference(question_var.columns)]
 question_var = question_var.to_numpy()
 
 # also need question levels
-question_level = pd.read_csv("../data/preprocessed/question_level_study2.csv")
+question_level = pd.read_csv(f"../data/preprocessed/question_level_{study}.csv")
 
 
 # grid of missingness
@@ -212,7 +214,7 @@ def MCAR_missingness(
         res = check_relationships(X_missing, question_level)
         if res.empty:
             X_missing.to_csv(
-                f"../data/study2/{folder}/NA_MCAR_{percent}_{iter}.csv", index=False
+                f"../data/{study}/{folder}/NA_MCAR_{percent}_{iter}.csv", index=False
             )
         else:
             print(f"Violations found for {percent}% missingness in iteration {iter}")

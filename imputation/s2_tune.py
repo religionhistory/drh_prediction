@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.experimental import enable_iterative_imputer  # noqa
-from sklearn.impute import IterativeImputer, KNNImputer, SimpleImputer
+from sklearn.impute import IterativeImputer, KNNImputer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score
 from sklearn.model_selection import ParameterGrid
@@ -10,7 +10,14 @@ from sklearn.linear_model import BayesianRidge
 
 # Import XGBoost
 from xgboost import XGBRegressor
-from imputation_functions import impute_data, evaluate_imputation
+from imputation_functions import (
+    create_imputer,
+    impute_data,
+    evaluate_imputation,
+    hierarchical_imputation,
+    data_integrity_check,
+    hierarchical_relationship_check,
+)
 from hyper_parameters import (
     param_grid_rf,
     param_grid_xgb,
@@ -18,14 +25,7 @@ from hyper_parameters import (
     param_grid_bayesian_ridge,
 )
 
-# Load the original data and the tuning dataset
-data_original = pd.read_csv("../data/preprocessed/answers_study2.csv")
-data_missing = pd.read_csv("../data/study2/hyperparams/NA_MCAR_15_1.csv")
-df_relationships = pd.read_csv("../data/preprocessed/question_level_study2.csv")
-
-# Define non-question predictors
-imputation_columns = data_original.filter(regex="^Q_").columns
-non_question_predictors = data_original.columns.difference(imputation_columns)
+study = "study2"
 
 # Define hyperparameter grids and imputation methods as before
 imputation_methods = {
@@ -51,32 +51,84 @@ imputation_methods = {
     },
 }
 
-# actually see whether we can get this to work ... #
+# Load the original data and the tuning dataset
+data_original = pd.read_csv(f"../data/preprocessed/answers_{study}.csv")
+data_missing = pd.read_csv(f"../data/{study}/hyperparams/NA_MCAR_15_1.csv")
+df_relationships = pd.read_csv(f"../data/preprocessed/question_level_{study}.csv")
 
-# Perform tuning for each imputation method
+# adjust the question IDs
+df_relationships["question_id"] = "Q_" + df_relationships["question_id"].astype(str)
+df_relationships["parent_question_id"] = "Q_" + df_relationships[
+    "parent_question_id"
+].astype(str)
+
+# Define non-question predictors
+imputation_columns = data_original.filter(regex="^Q_").columns
+non_question_predictors = data_original.columns.difference(imputation_columns)
+
+best_params_all = {}
+all_results = []
+
 for imputer_name, imputer_info in imputation_methods.items():
     imputer_class = imputer_info["imputer_class"]
-    param_grid = imputer_info["param_grid"]
     estimator_class = imputer_info.get("estimator_class", None)
+    param_grid = imputer_info["param_grid"]
 
-    results_df, best_params = tune_hierarchical_imputer(
-        imputer_name=imputer_name,
-        imputer_class=imputer_class,
-        estimator_class=estimator_class,
-        param_grid=param_grid,
-        data_missing=data_missing,
-        data_original=data_original,
-        df_relationships=df_relationships,
-        non_question_predictors=non_question_predictors,
-        imputation_columns=imputation_columns,
-    )
+    # Initialize variables to keep track of best parameters
+    best_score = -np.inf
+    best_params = None
+    results = []
 
-    # Save the results to CSV
+    # Generate the parameter grid
+    grid = list(ParameterGrid(param_grid))
+
+    for params in grid:
+        print(f"Testing parameters for {imputer_name}: {params}")
+
+        # Initialize the imputer with current parameters
+        imputer = create_imputer(imputer_name, imputer_class, estimator_class, params)
+
+        # Perform hierarchical imputation
+        data_imputed = hierarchical_imputation(
+            df_relationships=df_relationships,
+            non_question_predictors=non_question_predictors,
+            data_missing=data_missing,
+            imputer=imputer,
+        )
+
+        data_integrity_check(data_missing, data_imputed)
+        hierarchical_relationship_check(data_imputed, df_relationships)
+
+        # After all levels are processed, evaluate the imputed data
+        avg_metrics, metrics_dict = evaluate_imputation(
+            data_imputed=data_imputed,
+            data_original=data_original,
+            data_missing=data_missing,
+            imputation_columns=imputation_columns,
+        )
+
+        # Use F1 score as the metric to optimize
+        current_score = avg_metrics["f1_score"]
+
+        # Store results
+        result = params.copy()
+        result["imputer_name"] = imputer_name
+        result["avg_f1_score"] = current_score
+        results.append(result)
+
+        if current_score > best_score:
+            best_score = current_score
+            best_params = params.copy()
+            print(
+                f"New best parameters for {imputer_name}: {best_params} with score: {best_score}"
+            )
+
+    # Save the results for this imputer
+    results_df = pd.DataFrame(results)
     results_df.to_csv(
-        f"../data/study2/hyperparams/imputation_{imputer_name}_tuning_results.csv",
-        index=False,
+        f"../data/{study}/hyperparams/imputation_{imputer_name}.csv", index=False
     )
 
-    # Save best parameters to JSON
-    with open(f"../data/study2/hyperparams/best_{imputer_name}_params.json", "w") as f:
+    # Optionally, save best parameters to a JSON file
+    with open(f"../data/{study}/hyperparams/best_params_{imputer_name}.json", "w") as f:
         json.dump(best_params, f)
