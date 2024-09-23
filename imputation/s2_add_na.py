@@ -221,7 +221,7 @@ def MCAR_missingness(
 
 
 # the data sets for imputation / prediction
-for iter in range(10):
+for iter in range(50):
     MCAR_missingness(answers, question_var, question_level, iter)
 
 # the data sets for tuning hyperparameters

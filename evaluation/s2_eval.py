@@ -134,6 +134,7 @@ df_removenan_questions = df_removenan.merge(
 df_removenan_questions_f1 = df_removenan_questions[
     df_removenan_questions["metric"] == "f1_score"
 ]
+
 df_qlevel_table = (
     df_removenan_questions_f1.groupby(["question_level", "method"])["value"]
     .mean()

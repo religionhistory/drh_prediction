@@ -96,6 +96,7 @@ best_features_overall = best_features_overall.rename(
 best_features_overall["predictor_name"] = best_features_overall["predictor_code"].map(
     short_labels
 )
+best_features_overall = best_features_overall[["predictor_name", "mean_absolute_shap"]]
 
 # to latex
 best_features_overall.to_latex("../tables/s3_best_features_overall.tex", index=False)
@@ -132,6 +133,8 @@ feature_names = [short_labels.get(col, col) for col in X.columns]
 import matplotlib.pyplot as plt
 
 fig, ax = plt.subplots()
-shap.summary_plot(shap_values_class1, X, feature_names=feature_names)
-
-plt.savefig("../figures/study3/s3_shap_values_belief_in_afterlife.png")
+shap.summary_plot(shap_values_class1, X, feature_names=feature_names, show=False)
+plt.savefig(
+    "../figures/study3/s3_shap_values_belief_in_afterlife.pdf", bbox_inches="tight"
+)
+plt.close()

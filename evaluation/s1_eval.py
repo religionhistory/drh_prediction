@@ -133,7 +133,7 @@ multiple_lineplots(
     ncol_legend=5,
     y_tick_decimals=2,
     outpath=outpath,
-    outname="metrics_removenan.png",
+    outname="metrics_removenan.pdf",
 )
 
 # for supplementary
@@ -148,7 +148,7 @@ multiple_lineplots(
     ncol_legend=5,
     y_tick_decimals=2,
     outpath=outpath,
-    outname="metrics_fillzero.png",
+    outname="metrics_fillzero.pdf",
 )
 
 # for supplementary
@@ -163,7 +163,7 @@ multiple_lineplots(
     sharey="all",
     y_tick_decimals=1,
     outpath=outpath,
-    outname="f1_missingtype_removenan.png",
+    outname="f1_missingtype_removenan.pdf",
 )
 
 # for supplementary
@@ -178,7 +178,7 @@ multiple_lineplots(
     sharey="all",
     y_tick_decimals=1,
     outpath=outpath,
-    outname="f1_missingtype_fillzero.png",
+    outname="f1_missingtype_fillzero.pdf",
 )
 
 # individual question differences
