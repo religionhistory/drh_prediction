@@ -1,8 +1,5 @@
 import pandas as pd
-import numpy as np
 import json
-import glob
-import os
 from sklearn.experimental import enable_iterative_imputer  # noqa
 from sklearn.impute import SimpleImputer, KNNImputer, IterativeImputer
 from sklearn.ensemble import RandomForestClassifier
@@ -16,13 +13,11 @@ from imputation_functions import (
     hierarchical_relationship_check,
 )
 
-study = "study3"
-
 # Load the original data
-data_original = pd.read_csv(f"../data/preprocessed/answers_{study}.csv")
+data_original = pd.read_csv(f"../data/preprocessed/answers_study2.csv")
 
 # Load relationships and adjust question IDs
-df_relationships = pd.read_csv(f"../data/preprocessed/question_level_{study}.csv")
+df_relationships = pd.read_csv(f"../data/preprocessed/question_level_study2.csv")
 df_relationships["question_id"] = "Q_" + df_relationships["question_id"].astype(str)
 df_relationships["parent_question_id"] = "Q_" + df_relationships[
     "parent_question_id"
@@ -33,25 +28,21 @@ imputation_columns = data_original.filter(regex="^Q_").columns.tolist()
 non_question_predictors = data_original.columns.difference(imputation_columns).tolist()
 
 # locate the best imputer
-imputer_names = ("IterativeImputer_RandomForest",)
+imputer_name = "IterativeImputer_RandomForest"
 
 # Load data
 best_params = {}
-with open(
-    "../data/study2/hyperparams/best_IterativeImputer_RandomForest_params.json", "r"
-) as f:
-    best_params["IterativeImputer_RandomForest"] = json.load(f)
+with open(f"../data/study2/hyperparams/best_params_{imputer_name}.json", "r") as f:
+    best_params[imputer_name] = json.load(f)
 
-imputer = {
-    "rf": IterativeImputer(
-        estimator=RandomForestClassifier(
-            **best_params.get("IterativeImputer_RandomForest", {}), random_state=0
-        ),
-        max_iter=25,
-        random_state=0,
-        tol=1e-3,
-    )
-}
+imputer = IterativeImputer(
+    estimator=RandomForestClassifier(
+        **best_params.get(imputer_name, {}), random_state=0
+    ),
+    max_iter=25,
+    random_state=0,
+    tol=1e-3,
+)
 
 # Hierarchical imputation
 data_imputed = hierarchical_imputation(

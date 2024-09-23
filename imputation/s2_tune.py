@@ -119,9 +119,9 @@ for imputer_name, imputer_info in imputation_methods.items():
         if current_score > best_score:
             best_score = current_score
             best_params = params.copy()
-            print(
-                f"New best parameters for {imputer_name}: {best_params} with score: {best_score}"
-            )
+        print(
+            f"{imputer_name} {params}: current score: {current_score}, best score: {best_score}"
+        )
 
     # Save the results for this imputer
     results_df = pd.DataFrame(results)

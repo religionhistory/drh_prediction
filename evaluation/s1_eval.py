@@ -7,12 +7,14 @@ from evaluation_functions import (
     multiple_lineplots,
 )
 
+study = "study1"
+
 # load metrics files for each method
-metrics_knn = pd.read_csv("../data/study1/evaluation/metrics_knn.csv")
-metrics_rf = pd.read_csv("../data/study1/evaluation/metrics_rf.csv")
-metrics_ridge = pd.read_csv("../data/study1/evaluation/metrics_ridge.csv")
-metrics_xgb = pd.read_csv("../data/study1/evaluation/metrics_xgb.csv")
-metrics_mode = pd.read_csv("../data/study1/evaluation/metrics_mode.csv")
+metrics_knn = pd.read_csv(f"../data/{study}/evaluation/metrics_knn.csv")
+metrics_rf = pd.read_csv(f"../data/{study}/evaluation/metrics_rf.csv")
+metrics_ridge = pd.read_csv(f"../data/{study}/evaluation/metrics_ridge.csv")
+metrics_xgb = pd.read_csv(f"../data/{study}/evaluation/metrics_xgb.csv")
+metrics_mode = pd.read_csv(f"../data/{study}/evaluation/metrics_mode.csv")
 
 # combine metrics
 metrics_combined = pd.concat(
@@ -22,7 +24,7 @@ metrics_combined = pd.concat(
 # melt to long format
 metrics_combined = pd.melt(
     metrics_combined,
-    id_vars=["missing_type", "missing_percent", "iter", "column", "method"],
+    id_vars=["missing_type", "missing_percent", "iteration", "column", "method"],
     value_vars=["accuracy", "f1_score", "mcc"],
     var_name="metric",
     value_name="value",
@@ -35,7 +37,7 @@ and then introducing NaN resulting in some datasets
 with only 1 class.
 """
 
-group_cols = ["missing_type", "missing_percent", "iter", "column"]
+group_cols = ["missing_type", "missing_percent", "iteration", "column"]
 df_clean = remove_all_nan(group_cols, metrics_combined)
 
 """ Step 2: 
@@ -81,6 +83,22 @@ Now we can create 2 datasets that we can compare.
 df_removenan = pd.concat([df_accuracy, df_removenan])
 df_fillzero = pd.concat([df_accuracy, df_fillzero])
 
+## aggregate on questions
+df_removenan_agg = (
+    df_removenan.groupby(
+        ["missing_type", "missing_percent", "metric", "method", "iteration"]
+    )["value"]
+    .mean()
+    .reset_index()
+)
+df_fillzero_agg = (
+    df_fillzero.groupby(
+        ["missing_type", "missing_percent", "metric", "method", "iteration"]
+    )["value"]
+    .mean()
+    .reset_index()
+)
+
 """ Step 6: 
 Plot results 
 """
@@ -101,11 +119,11 @@ label_dict = {
     "mcc": "MCC",
 }
 
-outpath = "../figures/study1"
+outpath = f"../figures/{study}"
 
 # main plot
 multiple_lineplots(
-    df=df_removenan,
+    df=df_removenan_agg,
     metric="value",
     hue="method",
     grid="metric",
@@ -120,7 +138,7 @@ multiple_lineplots(
 
 # for supplementary
 multiple_lineplots(
-    df=df_fillzero,
+    df=df_fillzero_agg,
     metric="value",
     hue="method",
     grid="metric",
@@ -135,7 +153,7 @@ multiple_lineplots(
 
 # for supplementary
 multiple_lineplots(
-    df=df_removenan[df_removenan["metric"] == "f1_score"],
+    df=df_removenan_agg[df_removenan_agg["metric"] == "f1_score"],
     metric="value",
     hue="method",
     grid="missing_type",
@@ -150,7 +168,7 @@ multiple_lineplots(
 
 # for supplementary
 multiple_lineplots(
-    df=df_fillzero[df_fillzero["metric"] == "f1_score"],
+    df=df_fillzero_agg[df_fillzero_agg["metric"] == "f1_score"],
     metric="value",
     hue="method",
     grid="missing_type",
@@ -163,4 +181,4 @@ multiple_lineplots(
     outname="f1_missingtype_fillzero.png",
 )
 
-# could do something to evaluate individual questions as well.
+# individual question differences

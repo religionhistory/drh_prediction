@@ -1,0 +1,11 @@
+metric,n_neighbors,weights,imputer_name,avg_f1_score
+nan_euclidean,2,uniform,KNNImputer,0.590725337952391
+nan_euclidean,2,distance,KNNImputer,0.6286403762948037
+nan_euclidean,3,uniform,KNNImputer,0.6541456672602588
+nan_euclidean,3,distance,KNNImputer,0.6441826470084151
+nan_euclidean,5,uniform,KNNImputer,0.6415822373164992
+nan_euclidean,5,distance,KNNImputer,0.669081925024149
+nan_euclidean,7,uniform,KNNImputer,0.6633526758940719
+nan_euclidean,7,distance,KNNImputer,0.6539949897591603
+nan_euclidean,9,uniform,KNNImputer,0.6252947412465191
+nan_euclidean,9,distance,KNNImputer,0.6607716257700778

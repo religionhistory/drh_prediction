@@ -7,12 +7,14 @@ from evaluation_functions import (
     multiple_lineplots,
 )
 
+study = "study2"
+
 # load metrics files for each method
-metrics_knn = pd.read_csv("../data/study2/evaluation/metrics_knn.csv")
-metrics_rf = pd.read_csv("../data/study2/evaluation/metrics_rf.csv")
-metrics_ridge = pd.read_csv("../data/study2/evaluation/metrics_ridge.csv")
-metrics_xgb = pd.read_csv("../data/study2/evaluation/metrics_xgb.csv")
-metrics_mode = pd.read_csv("../data/study2/evaluation/metrics_mode.csv")
+metrics_knn = pd.read_csv(f"../data/{study}/evaluation/metrics_knn.csv")
+metrics_rf = pd.read_csv(f"../data/{study}/evaluation/metrics_rf.csv")
+metrics_ridge = pd.read_csv(f"../data/{study}/evaluation/metrics_ridge.csv")
+metrics_xgb = pd.read_csv(f"../data/{study}/evaluation/metrics_xgb.csv")
+metrics_mode = pd.read_csv(f"../data/{study}/evaluation/metrics_mode.csv")
 
 # combine metrics
 metrics_combined = pd.concat(
@@ -81,100 +83,61 @@ Now we can create 2 datasets that we can compare.
 df_removenan = pd.concat([df_accuracy, df_removenan])
 df_fillzero = pd.concat([df_accuracy, df_fillzero])
 
-""" Step 6: 
-Plot results 
+## aggregate on questions
+df_removenan_agg = (
+    df_removenan.groupby(
+        ["missing_type", "missing_percent", "metric", "method", "iteration"]
+    )["value"]
+    .mean()
+    .reset_index()
+)
+df_fillzero_agg = (
+    df_fillzero.groupby(
+        ["missing_type", "missing_percent", "metric", "method", "iteration"]
+    )["value"]
+    .mean()
+    .reset_index()
+)
+
+
+"""
+Generate tables.
+No meaningful differences between 10-20% additional missing data.
+So just aggregate everything into one measure. 
 """
 
-color_dict = {
-    "mode": "tab:gray",
-    "knn": "tab:blue",
-    "ridge": "tab:orange",
-    "rf": "tab:red",
-    "xgb": "tab:green",
-}
-
-legend_order = ["mode", "knn", "ridge", "rf", "xgb"]
-
-label_dict = {
-    "accuracy": "Accuracy",
-    "f1_score": "F1 Score",
-    "mcc": "MCC",
-}
-
-outpath = "../figures/study2"
-
-
-# main plot
-multiple_lineplots(
-    df=df_removenan,
-    metric="value",
-    hue="method",
-    grid="metric",
-    color_dict=color_dict,
-    label_dict=label_dict,
-    legend_order=legend_order,
-    ncol_legend=5,
-    y_tick_decimals=2,
-    outpath=outpath,
-    outname="metrics_removenan.png",
+# removenan overall table
+df_removenan_table = (
+    df_removenan_agg.groupby(["metric", "method"])["value"].mean().unstack()
 )
+df_removenan_table = df_removenan_table.round(3)
+df_removenan_table.to_latex("../tables/s2_removenan_table.tex", float_format="%.3f")
 
-# for supplementary
-multiple_lineplots(
-    df=df_fillzero,
-    metric="value",
-    hue="method",
-    grid="metric",
-    color_dict=color_dict,
-    label_dict=label_dict,
-    legend_order=legend_order,
-    ncol_legend=5,
-    y_tick_decimals=2,
-    outpath=outpath,
-    outname="metrics_fillzero.png",
+# fillzero overall table
+df_fillzero_table = (
+    df_fillzero_agg.groupby(["metric", "method"])["value"].mean().unstack()
 )
+df_fillzero_table = df_fillzero_table.round(3)
+df_fillzero_table.to_latex("../tables/s2_fillzero_table.tex", float_format="%.3f")
 
-# for supplementary
-multiple_lineplots(
-    df=df_removenan[df_removenan["metric"] == "f1_score"],
-    metric="value",
-    hue="method",
-    grid="missing_type",
-    color_dict=color_dict,
-    legend_order=legend_order,
-    ncol_legend=5,
-    sharey="all",
-    y_tick_decimals=1,
-    outpath=outpath,
-    outname="f1_missingtype_removenan.png",
-)
-
-# for supplementary
-multiple_lineplots(
-    df=df_fillzero[df_fillzero["metric"] == "f1_score"],
-    metric="value",
-    hue="method",
-    grid="missing_type",
-    color_dict=color_dict,
-    legend_order=legend_order,
-    ncol_legend=5,
-    sharey="all",
-    y_tick_decimals=1,
-    outpath=outpath,
-    outname="f1_missingtype_fillzero.png",
-)
-
-# could just show an overall table
-# no large differences between the methods so that might be enough
-# save this to latex
-df_removenan.groupby(["metric", "method"])["value"].mean().unstack()
-
-# this would also be a great table to show in the paper
-# save this to latex
-question_relations = pd.read_csv("../data/preprocessed/question_level_study2.csv")
+# show by question level
+## get question relations
+question_relations = pd.read_csv(f"../data/preprocessed/question_level_{study}.csv")
 question_relations["question_id"] = "Q_" + question_relations["question_id"].astype(str)
 question_relations = question_relations[["question_id", "question_level"]]
 question_relations = question_relations.rename(columns={"question_id": "column"})
-df_removenan = df_removenan.merge(question_relations, on="column", how="inner")
-df_removenan = df_removenan[df_removenan["metric"] == "f1_score"]
-df_removenan.groupby(["question_level", "method"])["value"].mean().unstack()
+
+# merge question relations
+df_removenan_questions = df_removenan.merge(
+    question_relations, on="column", how="inner"
+)
+df_removenan_questions_f1 = df_removenan_questions[
+    df_removenan_questions["metric"] == "f1_score"
+]
+df_qlevel_table = (
+    df_removenan_questions_f1.groupby(["question_level", "method"])["value"]
+    .mean()
+    .unstack()
+)
+df_qlevel_table = df_qlevel_table.round(3)
+df_qlevel_table.to_latex("../tables/s2_qlevel_table.tex", float_format="%.3f")

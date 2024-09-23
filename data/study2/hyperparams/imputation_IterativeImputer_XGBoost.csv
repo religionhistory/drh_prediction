@@ -1,0 +1,13 @@
+colsample_bytree,learning_rate,max_depth,n_estimators,objective,subsample,imputer_name,avg_f1_score
+0.9,0.1,,20,reg:squarederror,0.9,IterativeImputer_XGBoost,0.752189410986731
+0.9,0.1,,20,reg:squarederror,1.0,IterativeImputer_XGBoost,0.7350655649633182
+0.9,0.1,,50,reg:squarederror,0.9,IterativeImputer_XGBoost,0.7552972872942592
+0.9,0.1,,50,reg:squarederror,1.0,IterativeImputer_XGBoost,0.7427460478585425
+0.9,0.1,,100,reg:squarederror,0.9,IterativeImputer_XGBoost,0.7457259252359046
+0.9,0.1,,100,reg:squarederror,1.0,IterativeImputer_XGBoost,0.7407438521914386
+1.0,0.1,,20,reg:squarederror,0.9,IterativeImputer_XGBoost,0.7364779868674584
+1.0,0.1,,20,reg:squarederror,1.0,IterativeImputer_XGBoost,0.7420414631210775
+1.0,0.1,,50,reg:squarederror,0.9,IterativeImputer_XGBoost,0.7428760532930763
+1.0,0.1,,50,reg:squarederror,1.0,IterativeImputer_XGBoost,0.7385801409289133
+1.0,0.1,,100,reg:squarederror,0.9,IterativeImputer_XGBoost,0.7527299074149585
+1.0,0.1,,100,reg:squarederror,1.0,IterativeImputer_XGBoost,0.7475201571055082

@@ -1,0 +1,13 @@
+bootstrap,max_depth,max_features,min_samples_leaf,min_samples_split,n_estimators,imputer_name,avg_f1_score
+True,,sqrt,1,2,20,IterativeImputer_RandomForest,0.7639344479028516
+True,,sqrt,1,2,50,IterativeImputer_RandomForest,0.7832514693228905
+True,,sqrt,1,2,100,IterativeImputer_RandomForest,0.7770680746074309
+True,,sqrt,1,5,20,IterativeImputer_RandomForest,0.7698816103564048
+True,,sqrt,1,5,50,IterativeImputer_RandomForest,0.7776951767019544
+True,,sqrt,1,5,100,IterativeImputer_RandomForest,0.7791161109380489
+True,,sqrt,2,2,20,IterativeImputer_RandomForest,0.788455885789379
+True,,sqrt,2,2,50,IterativeImputer_RandomForest,0.7732175340806323
+True,,sqrt,2,2,100,IterativeImputer_RandomForest,0.781439182001124
+True,,sqrt,2,5,20,IterativeImputer_RandomForest,0.7668282256607045
+True,,sqrt,2,5,50,IterativeImputer_RandomForest,0.7887075622888567
+True,,sqrt,2,5,100,IterativeImputer_RandomForest,0.7740750681930075

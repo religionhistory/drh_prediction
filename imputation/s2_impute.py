@@ -64,7 +64,7 @@ imputers = {
         estimator=BayesianRidge(
             **best_params.get("IterativeImputer_BayesianRidge", {})
         ),
-        max_iter=25,
+        max_iter=10,
         random_state=0,
         tol=1e-3,
     ),
@@ -72,7 +72,7 @@ imputers = {
         estimator=RandomForestClassifier(
             **best_params.get("IterativeImputer_RandomForest", {}), random_state=0
         ),
-        max_iter=25,
+        max_iter=10,
         random_state=0,
         tol=1e-3,
     ),
@@ -80,7 +80,7 @@ imputers = {
         estimator=XGBRegressor(
             **best_params.get("IterativeImputer_XGBoost", {}), random_state=0
         ),
-        max_iter=25,
+        max_iter=10,
         random_state=0,
         tol=1e-3,
     ),

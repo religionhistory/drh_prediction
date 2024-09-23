@@ -73,7 +73,6 @@ for imputer_name, imputer_info in imputation_methods.items():
     grid = list(ParameterGrid(param_grid))
 
     for params in grid:
-        print(f"Testing parameters for {imputer_name}: {params}")
 
         # Initialize the imputer with current parameters
         imputer = create_imputer(imputer_name, imputer_class, estimator_class, params)
@@ -101,9 +100,8 @@ for imputer_name, imputer_info in imputation_methods.items():
         if current_score > best_score:
             best_score = current_score
             best_params = params.copy()
-            print(
-                f"New best parameters for {imputer_name}: {best_params} with score: {best_score}"
-            )
+
+        print(f"{imputer_name} {params}: current: {current_score}, best: {best_score}")
 
     # Save the results for this imputer
     results_df = pd.DataFrame(results)

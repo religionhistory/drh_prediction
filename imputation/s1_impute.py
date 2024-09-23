@@ -61,7 +61,7 @@ imputers = {
         estimator=BayesianRidge(
             **best_params.get("IterativeImputer_BayesianRidge", {})
         ),
-        max_iter=25,
+        max_iter=10,
         random_state=0,
         tol=1e-3,
     ),
@@ -69,7 +69,7 @@ imputers = {
         estimator=RandomForestClassifier(
             **best_params.get("IterativeImputer_RandomForest", {}), random_state=0
         ),
-        max_iter=25,
+        max_iter=10,
         random_state=0,
         tol=1e-3,
     ),
@@ -77,7 +77,7 @@ imputers = {
         estimator=XGBRegressor(
             **best_params.get("IterativeImputer_XGBoost", {}), random_state=0
         ),
-        max_iter=25,
+        max_iter=10,
         random_state=0,
         tol=1e-3,
     ),
@@ -177,7 +177,5 @@ for imputer_name, imputer in imputers.items():
         imputer_name=imputer_name,
         imputer=imputer,
         data_original=data_original,
-        df_relationships=df_relationships,
-        non_question_predictors=non_question_predictors,
         imputation_columns=imputation_columns,
     )

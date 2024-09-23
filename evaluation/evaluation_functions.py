@@ -50,6 +50,7 @@ def multiple_lineplots(
     legend_order=None,  # Added legend_order parameter
     figsize=(7, 7),
     alpha=1,
+    errorbar=("ci", 95),
     sharey="none",
     ncol_legend=None,
     outpath=None,
@@ -76,13 +77,7 @@ def multiple_lineplots(
         hue_values = legend_order if legend_order else df_subset[hue].unique()
 
         for hue_value in hue_values:
-            # Subset the data for each hue value
-            df_grouped = (
-                df_subset[df_subset[hue] == hue_value]
-                .groupby(["missing_percent"])[metric]
-                .mean()
-                .reset_index(name="average")
-            )
+            df_grouped = df_subset[df_subset[hue] == hue_value]
 
             # Plotting with specified color from the color_dict or default color
             plot_color = (
@@ -94,16 +89,18 @@ def multiple_lineplots(
             sns.lineplot(
                 data=df_grouped,
                 x="missing_percent",
-                y="average",
+                y="value",
                 label=hue_value if legend else None,
                 color=plot_color,
                 alpha=alpha,
                 marker="o",
                 ax=axes[num],
+                errorbar=errorbar,
             )
 
             # Update global y-axis limits
-            ymin, ymax = df_grouped["average"].min(), df_grouped["average"].max()
+            # ymin, ymax = df_grouped["average"].min(), df_grouped["average"].max()
+            ymin, ymax = df_grouped["value"].min(), df_grouped["value"].max()
             global_ymin, global_ymax = min(global_ymin, ymin), max(global_ymax, ymax)
 
         # Remove the legend from individual plots
