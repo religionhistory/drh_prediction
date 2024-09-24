@@ -99,8 +99,12 @@ def multiple_lineplots(
             )
 
             # Update global y-axis limits
-            # ymin, ymax = df_grouped["average"].min(), df_grouped["average"].max()
-            ymin, ymax = df_grouped["value"].min(), df_grouped["value"].max()
+            df_minmax = (
+                df_grouped.groupby(["missing_percent", "metric", "method"])["value"]
+                .mean()
+                .reset_index(name="value")
+            )
+            ymin, ymax = df_minmax["value"].min(), df_minmax["value"].max()
             global_ymin, global_ymax = min(global_ymin, ymin), max(global_ymax, ymax)
 
         # Remove the legend from individual plots

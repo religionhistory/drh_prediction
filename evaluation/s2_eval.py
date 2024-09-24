@@ -142,3 +142,52 @@ df_qlevel_table = (
 )
 df_qlevel_table = df_qlevel_table.round(3)
 df_qlevel_table.to_latex("../tables/s2_qlevel_table.tex", float_format="%.3f")
+
+"""
+Variation in F1 score by questions.
+This is really key. 
+"""
+
+df_removenan_rf_f1 = df_removenan[(df_removenan["method"] == "rf")]
+
+# variation in f1 score
+df_column_score = (
+    df_removenan_rf_f1.groupby(["column", "metric"])["value"]
+    .mean()
+    .reset_index(name="value")
+    .sort_values("value")
+)
+
+from constants import short_labels
+
+df_column_score["question_name"] = df_column_score["column"].apply(
+    lambda x: short_labels[x]
+)
+
+# get the averages for these columns #
+answers_study2 = pd.read_csv("../data/preprocessed/answers_study2.csv")
+question_columns = [x for x in answers_study2.columns if x.startswith("Q_")]
+answers_long = pd.melt(
+    answers_study2,
+    id_vars=["entry_id"],
+    value_vars=question_columns,
+    var_name="column",
+    value_name="answer",
+)
+
+# check some of these for class imbalance
+fraction_yes = (
+    answers_long.groupby("column")["answer"].mean().reset_index(name="fraction_yes")
+)
+
+df_column_score = df_column_score.merge(fraction_yes, on="column", how="inner")
+
+### first check accuracy ###
+df_accuracy = df_column_score[df_column_score["metric"] == "accuracy"]
+df_accuracy.sort_values("value")
+
+df_f1 = df_column_score[df_column_score["metric"] == "f1_score"]
+df_f1.sort_values("value")
+
+df_mcc = df_column_score[df_column_score["metric"] == "mcc"]
+df_mcc.sort_values("value")

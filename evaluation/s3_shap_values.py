@@ -103,13 +103,11 @@ best_features_overall.to_latex("../tables/s3_best_features_overall.tex", index=F
 
 """
 Pick a single question to see which predictors are best. 
-Many things could be interesting here, but let us try with
-"Belief in afterlife". 
 """
 
 # find the question
 question_names = pd.read_csv("../data/preprocessed/answers.csv")
-target_question = "Q_2900"  # Belief in afterlife
+target_question = "Q_2374"  # proselytizing
 
 # Train data where the target question is not missing
 training_data = df.dropna(subset=target_question)
@@ -134,7 +132,5 @@ import matplotlib.pyplot as plt
 
 fig, ax = plt.subplots()
 shap.summary_plot(shap_values_class1, X, feature_names=feature_names, show=False)
-plt.savefig(
-    "../figures/study3/s3_shap_values_belief_in_afterlife.pdf", bbox_inches="tight"
-)
+plt.savefig("../figures/study3/s3_shap_values_proselytizing.pdf", bbox_inches="tight")
 plt.close()

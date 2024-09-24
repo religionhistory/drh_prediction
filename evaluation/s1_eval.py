@@ -152,23 +152,31 @@ multiple_lineplots(
 )
 
 # for supplementary
+legend_order = ["knn", "ridge", "rf", "xgb"]
+
 multiple_lineplots(
-    df=df_removenan_agg[df_removenan_agg["metric"] == "f1_score"],
+    df=df_removenan_agg[
+        (df_removenan_agg["metric"] == "f1_score")
+        & (df_removenan_agg["method"] != "mode")
+    ],
     metric="value",
     hue="method",
     grid="missing_type",
     color_dict=color_dict,
     legend_order=legend_order,
-    ncol_legend=5,
+    ncol_legend=4,
     sharey="all",
-    y_tick_decimals=1,
+    y_tick_decimals=2,
     outpath=outpath,
     outname="f1_missingtype_removenan.pdf",
 )
 
 # for supplementary
 multiple_lineplots(
-    df=df_fillzero_agg[df_fillzero_agg["metric"] == "f1_score"],
+    df=df_fillzero_agg[
+        (df_fillzero_agg["metric"] == "f1_score")
+        & (df_fillzero_agg["method"] != "mode")
+    ],
     metric="value",
     hue="method",
     grid="missing_type",
@@ -176,9 +184,7 @@ multiple_lineplots(
     legend_order=legend_order,
     ncol_legend=5,
     sharey="all",
-    y_tick_decimals=1,
+    y_tick_decimals=2,
     outpath=outpath,
     outname="f1_missingtype_fillzero.pdf",
 )
-
-# individual question differences
